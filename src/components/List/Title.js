@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Typography, InputBase } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz'; 
+
 const useStyle = makeStyles((theme) => ({
     editableTitleContainer:{
         marginLeft: theme.spacing(1),
@@ -21,7 +22,7 @@ const useStyle = makeStyles((theme) => ({
         }
     }
 }))
-export default function Title() {
+export default function Title({ title }) {
       const [open,setOpen] = useState(false);
       const classes = useStyle();
     return (
@@ -30,7 +31,7 @@ export default function Title() {
             <div>
                 <InputBase
                     autoFocus 
-                    value= "Todo"
+                    value= "{title}"
                     inputProps ={{
                         className: classes.input,
                     }}
@@ -38,11 +39,13 @@ export default function Title() {
                 onBlur = {() => setOpen(!open)}
                 />
             </div>
-
+   
         ) : (
             <div className= {classes.editableTitleContainer}>
                 <Typography onClick={() =>setOpen(!open)} 
-                className={classes.editableTitle}>Todo
+                className={classes.editableTitle}
+                >
+                    {title}
                 </Typography>
                 <MoreHorizIcon />
             </div>
