@@ -1,25 +1,27 @@
 import React, { useState } from 'react';
-import {v4 as uuid} from 'uuid';
+import { v4 as uuid } from 'uuid';
 import InputContainer from './components/Input/InputContainer';
 import List from './components/List/List';
 import store from './Utils/store';
 import StoreApi from './Utils/storeApi'
 import { makeStyles } from '@material-ui/core/styles';
-import { DragDropContext } from 'react-beautiful-dnd';
-import { SentimentSatisfied } from '@material-ui/icons';
+import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 
-const useStyle = makeStyles((theme)=> ({
+const useStyle = makeStyles((theme) => ({
   root: {
-    display: 'flex',
-    height: '100vh',
+    minHeight: '100vh',
     background: 'greenyellow',
-    overflowY:'auto'
+    width: '100%',
+    overflowY: 'auto'
+  },
+  listContainer: {
+    display: 'flex',
   },
 }));
 export default function App() {
   const [data, setData] = useState(store);
   const classes = useStyle();
-  const addMoreCard = (title, listId) =>{
+  const addMoreCard = (title, listId) => {
     const newCardId = uuid();
     const newCard = {
       id: newCardId,
@@ -42,7 +44,7 @@ export default function App() {
   const addMoreList = (title) => {
     const newListId = uuid();
     const newList = {
-      id:newListId,
+      id: newListId,
       title,
       cards: [],
     };
@@ -50,17 +52,17 @@ export default function App() {
       listIds: [...data.listIds, newListId],
       lists: {
         ...data.lists,
-        [newListId]:newList,
-      }
+        [newListId]: newList,
+      },
     };
-       setData(newState);
+    setData(newState);
   };
-  const updateListTitle = (title, listId) =>{
-     const list =  data.lists[listId];
-     list.title = title;
-     const newState = {
+  const updateListTitle = (title, listId) => {
+    const list = data.lists[listId];
+    list.title = title;
+    const newState = {
       ...data,
-      lists:{
+      lists: {
         ...data.lists,
         [listId]: list,
       },
@@ -68,40 +70,69 @@ export default function App() {
     setData(newState);
   }
   const onDragEnd = (result) => {
-    const {destination, source, draggableId } = result;
-    console.log("destination", destination, 'source', source, draggableId);
-    if(!destination){
+    const { destination, source, draggableId, type } = result;
+    console.log('destination', destination, 'source', source, draggableId);
+    if (!destination) {
+      return;
+    }
+
+    if (type === 'list') {
+      const newListIds = data.listIds;
+      newListIds.splice(source.index, 1);
+      newListIds.splice(destination.index, 0, draggableId);
       return;
     }
     const sourceList = data.lists[source.droppableId];
     const destinationList = data.lists[destination.droppableId];
-    const draggingCard = sourceList.cards.filter((card) => card.is === draggableId)[0];
+    const draggingCard = sourceList.cards.filter((card) => card.id === draggableId)[0];
 
-    if(source.droppableId === destination.droppableId){
+    if (source.droppableId === destination.droppableId) {
       sourceList.cards.splice(source.index, 1)
       destinationList.cards.splice(destination.index, 0, draggingCard);
       const newState = {
         ...data,
-        lists:{
+        lists: {
           ...data.lists,
           [sourceList.id]: destinationList,
         },
       };
-      
+      setData(newState);
+    } else {
+      sourceList.cards.splice(source.index, 1);
+      destinationList.cards.splice(destination.index, 0, draggingCard);
+
+      const newState = {
+        ...data,
+        lists: {
+          ...data.lists,
+          [sourceList.id]: sourceList,
+          [destinationList.id]: destinationList,
+        },
+      };
       setData(newState);
     }
-}
+  }
   return (
     <StoreApi.Provider value={{ addMoreCard, addMoreList, updateListTitle }}>
-      <DragDropContext onDrageND = {onDragEnd}>
-    <div className={classes.root}>
-      {data.listIds.map((listId)=>{
-        const list = data.lists[listId];
-        return <List list={list} key={listId}/>
-      })}
-      <InputContainer type='list'/>
-    </div>
-    </DragDropContext>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="app" type="list" direction="horizontal" >
+          {(provided) => (
+            <div
+              className={classes.listContainer}
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+            >
+
+              {data.listIds.map((listId, index) => {
+                const list = data.lists[listId];
+                return <List list={list} key={listId} index={index} />
+              })}
+              <InputContainer type="list" />
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     </StoreApi.Provider>
   );
 }

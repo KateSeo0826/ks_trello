@@ -21,12 +21,20 @@ const data = {
             title: 'ToDo',
             cards,
         },
+        'list-2':{
+            id: 'list-2',
+            title: 'Doing',
+            cards: [],
+        },
+         'list-3':{
+            id: 'list-3',
+            title: 'Done',
+            cards: [],
+        },
     },
-    listIds: ['list-1'],
-};
-    //     'list-2':{
-    //         id: 'list-2',
-    //         title: 'Doing',
+    listIds: ['list-1', 'list-2', 'list-3'],
+}
+
     //         cards: [
     //            { 
     //                id: 'card-4',
