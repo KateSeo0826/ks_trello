@@ -5,6 +5,7 @@ import { makeStyles, fade } from '@material-ui/core/styles';
 import storeApi from "../../Utils/storeApi"
 const useStyle = makeStyles((theme) => ({
     card:{
+     width: '280px',
      margin: theme.spacing(0, 1, 1, 1), 
      paddingBottom: theme.spacing(4),
      padding: theme.spacing(1,1,1,0),
@@ -23,22 +24,25 @@ const useStyle = makeStyles((theme) => ({
         margin: theme.spacing(0,1,1,1)
     }
 }))
-export default function InputCard({setOpen, listId}) {
+export default function InputCard({setOpen, listId, type}) {
     const classes = useStyle();
-    const { addMoreCard } = useContext(storeApi);
-    const [cardTitle, setCardTitle] = useState('');
+    const { addMoreCard, addMoreList } = useContext(storeApi);
+    const [title, setTitle] = useState('');
 
     const handleOnChange = (e)=>{
-        setCardTitle(e.target.value);
+        setTitle(e.target.value);
     };
     const handleBtnConfirm = () => {
-        addMoreCard(cardTitle, listId);
-        setOpen(false);
-    }
-
-    const handleBlur = () =>{
-        setOpen(false);
-        setCardTitle('');
+        if(type === 'card'){
+            addMoreCard(title, listId);
+            setTitle('');
+            setOpen(false);
+        }
+        else{
+            addMoreList(title);
+            setTitle('');
+            setOpen(false);
+        }
     }
     return (
         <div>
@@ -47,23 +51,27 @@ export default function InputCard({setOpen, listId}) {
                 <InputBase
                     onChange={handleOnChange} 
                     multiline 
-                    onBlur ={handleBlur}
+                    onBlur ={() => setOpen(false)}
                     fullWidth 
                     inputProps ={{
                     classes: classes.input,
                 }} 
-                value ={cardTitle}
-                placeholder='Enter a title of this card..'
+                value ={title}
+                placeholder= {type === 'card' 
+                    ? 'Enter a title of this card..'
+                    :'Enter list title'
+                }
                 />
             </Paper>
         </div>
         <div>
-            <Button className={classes.btnConfirm} onClick={handleBtnConfirm}>Add Card</Button>
+            <Button className={classes.btnConfirm} onClick={handleBtnConfirm}>
+                {type ==='card' ? 'Add Card' : 'Add List'} 
+            </Button>
             <IconButton onClick={()=>setOpen(false)}>
                 <ClearIcon />
             </IconButton>
         </div>
         </div>
-
     )
 }
