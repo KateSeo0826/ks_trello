@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useState, useContext } from 'react'
 import { Paper, InputBase, IconButton, Button } from '@material-ui/core';
 import ClearIcon from'@material-ui/icons/Clear';
 import { makeStyles, fade } from '@material-ui/core/styles';
-
+import storeApi from "../../Utils/storeApi"
 const useStyle = makeStyles((theme) => ({
     card:{
      margin: theme.spacing(0, 1, 1, 1), 
@@ -23,26 +23,42 @@ const useStyle = makeStyles((theme) => ({
         margin: theme.spacing(0,1,1,1)
     }
 }))
-export default function InputCard({setOpen}) {
+export default function InputCard({setOpen, listId}) {
     const classes = useStyle();
+    const { addMoreCard } = useContext(storeApi);
+    const [cardTitle, setCardTitle] = useState('');
+
+    const handleOnChange = (e)=>{
+        setCardTitle(e.target.value);
+    };
+    const handleBtnConfirm = () => {
+        addMoreCard(cardTitle, listId);
+        setOpen(false);
+    }
+
+    const handleBlur = () =>{
+        setOpen(false);
+        setCardTitle('');
+    }
     return (
         <div>
         <div className={classes.card}>
             <Paper className={classes.card}>
-                <InputBase 
+                <InputBase
+                    onChange={handleOnChange} 
                     multiline 
-                    onBlur ={()=>setOpen(false)}
+                    onBlur ={handleBlur}
                     fullWidth 
                     inputProps ={{
                     classes: classes.input,
-
                 }} 
-                placeholder='Enter a title of this card'
+                value ={cardTitle}
+                placeholder='Enter a title of this card..'
                 />
             </Paper>
         </div>
         <div>
-            <Button className={classes.btnConfirm} onClick={()=>setOpen(false)}>Add Card</Button>
+            <Button className={classes.btnConfirm} onClick={handleBtnConfirm}>Add Card</Button>
             <IconButton onClick={()=>setOpen(false)}>
                 <ClearIcon />
             </IconButton>
